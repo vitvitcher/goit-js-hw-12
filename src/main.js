@@ -30,7 +30,6 @@ function makeQuery(formattedInput, pageNumber) {
         window.scrollBy(pos)
         if (maxPages === 0) {
             maxPages = Math.ceil(searchResults.totalHits / imagesPerPage)
-            console.log(maxPages)
         }
         if (maxPages <= currentPageNumber) {
             hideLoadMoreButton()
@@ -62,7 +61,11 @@ searchForm.addEventListener("submit", event => {
     const searchInput = form.elements["search-text"].value.trim()
 
     if (searchInput === "") {
-        window.alert("The search field cannot be empty!")
+        iziToast.error({
+            title: "The search field cannot be empty!",
+            message: `${error}`,
+            position: "topCenter"
+        });
         return
     }
 
@@ -73,7 +76,6 @@ searchForm.addEventListener("submit", event => {
     maxPages = 0
 
 
-    //console.log(formattedInput)
     makeQuery(formattedInput, 1)
 
     savedInput = formattedInput
