@@ -4,6 +4,7 @@ import "simplelightbox/dist/simple-lightbox.min.css";
 
 const loader = document.querySelector(".loader")
 const gallery = document.querySelector(".gallery")
+const loadButton = document.querySelector(".load-button")
 let lightBoxGallery = new SimpleLightbox('.gallery li a', { captionsData: 'alt', captionscaptionDelay: 250 });
 
 function galeryMarkup() {
@@ -11,8 +12,8 @@ function galeryMarkup() {
 }
 
 export function createGallery(images) {
-    gallery.innerHTML = images.map(image => {
-        return `<li class="gallery-item">
+  gallery.insertAdjacentHTML("beforeend", images.map(image => {
+    return `<li class="gallery-item">
         <a href=${image.largeImageURL}> <img class="gallery-image" src="${image.webformatURL}" alt="${image.tags}">
           <ul class="image-stats-list">
             <li>
@@ -35,18 +36,25 @@ export function createGallery(images) {
 
         </a>
       </li>`
-    }).join("")
+  }).join(""))
 
-    lightBoxGallery.refresh()
+  lightBoxGallery.refresh()
 }
 
 export function clearGallery() {
-    gallery.innerHTML = ""
+  gallery.innerHTML = ""
 }
 
 export function showLoader() {
-    loader.style.display = 'inline-block'
+  loader.style.display = 'inline-block'
 }
 export function hideLoader() {
-    loader.style.display = 'none'
+  loader.style.display = 'none'
+}
+
+export function showLoadMoreButton() {
+  loadButton.style.display = 'inline-block'
+}
+export function hideLoadMoreButton() {
+  loadButton.style.display = 'none'
 }

@@ -1,39 +1,48 @@
 import { getImagesByQuery } from './js/pixabay-api'
-import { createGallery, clearGallery, showLoader, hideLoader } from './js/render-functions'
+import { createGallery, clearGallery, showLoader, hideLoader, showLoadMoreButton, hideLoadMoreButton } from './js/render-functions'
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
 
 const searchForm = document.querySelector(".form")
-const prevButton = searchForm.querySelector(".page-scroll-button-prev")
-const nextButton = searchForm.querySelector(".page-scroll-button-next")
-const pageText = searchForm.querySelector(".page-number")
+const loadButton = document.querySelector(".load-button")
+
+const imagesPerPage = 15 //9+10
 let currentPageNumber = 1
 let savedInput = ""
-
-function clearPageFields() {
-    prevButton.style.display = 'none'
-    nextButton.style.display = 'none'
-    pageText.textContent = ""
-}
+let maxPages = 0
 
 function makeQuery(formattedInput, pageNumber) {
-    clearGallery()
     showLoader()
     getImagesByQuery(formattedInput, pageNumber).then(searchResults => {
         hideLoader()
-        if (searchResults.length === 0) {
+        if (searchResults.hits.length === 0) {
             iziToast.error({
                 color: "",
                 title: "Oops!",
                 message: "Sorry, there are no images matching your search query. Please try again!",
                 position: "topCenter"
             });
-            clearPageFields()
             return
         }
-        createGallery(searchResults)
-        pageText.textContent = `Page ${pageNumber}`
 
+        createGallery(searchResults.hits)
+
+        window.scrollBy(pos)
+        if (maxPages === 0) {
+            maxPages = Math.ceil(searchResults.totalHits / imagesPerPage)
+            console.log(maxPages)
+        }
+        if (maxPages <= currentPageNumber) {
+            hideLoadMoreButton()
+            iziToast.warning({
+                color: "",
+                title: "All pages loaded",
+                message: "If you would like to increase the amount of images, consider buying our premium membership",
+                position: "topCenter"
+            });
+        } else {
+            showLoadMoreButton()
+        }
     }).catch(error => {
         iziToast.error({
             color: "",
@@ -42,7 +51,7 @@ function makeQuery(formattedInput, pageNumber) {
             position: "topCenter"
         });
         hideLoader()
-        clearPageFields()
+        return
     })
 }
 
@@ -58,23 +67,23 @@ searchForm.addEventListener("submit", event => {
     }
 
     const formattedInput = searchInput.split(" ").join("+")
-
+    hideLoadMoreButton()
+    clearGallery()
     form.reset()
+    maxPages = 0
+
 
     //console.log(formattedInput)
     makeQuery(formattedInput, 1)
+
     savedInput = formattedInput
     currentPageNumber = 1
-    prevButton.style.display = 'inline-block'
-    nextButton.style.display = 'inline-block'
+
 })
 
-prevButton.addEventListener("click", event => {
-    if (currentPageNumber <= 1) { return }
-    makeQuery(savedInput, currentPageNumber - 1)
-    currentPageNumber -= 1
-})
-nextButton.addEventListener("click", event => {
-    makeQuery(savedInput, currentPageNumber + 1)
+loadButton.addEventListener("click", event => {
     currentPageNumber += 1
+    hideLoadMoreButton()
+    showLoader()
+    makeQuery(savedInput, currentPageNumber)
 })
