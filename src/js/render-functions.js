@@ -7,10 +7,6 @@ const gallery = document.querySelector(".gallery")
 const loadButton = document.querySelector(".load-button")
 let lightBoxGallery = new SimpleLightbox('.gallery li a', { captionsData: 'alt', captionscaptionDelay: 250 });
 
-function galeryMarkup() {
-
-}
-
 export function createGallery(images) {
   gallery.insertAdjacentHTML("beforeend", images.map(image => {
     return `<li class="gallery-item">

@@ -6,14 +6,17 @@ import "izitoast/dist/css/iziToast.min.css";
 const searchForm = document.querySelector(".form")
 const loadButton = document.querySelector(".load-button")
 
-const imagesPerPage = 15 //9+10
+const imagesPerPage = 15
 let currentPageNumber = 1
 let savedInput = ""
 let maxPages = 0
 
-function makeQuery(formattedInput, pageNumber) {
-    showLoader()
-    getImagesByQuery(formattedInput, pageNumber).then(searchResults => {
+
+async function makeQuery(formattedInput, pageNumber) {
+    try {
+        showLoader()
+        const searchResults = await getImagesByQuery(formattedInput, pageNumber)
+
         hideLoader()
         if (searchResults.hits.length === 0) {
             iziToast.error({
@@ -26,8 +29,6 @@ function makeQuery(formattedInput, pageNumber) {
         }
 
         createGallery(searchResults.hits)
-
-        window.scrollBy(pos)
         if (maxPages === 0) {
             maxPages = Math.ceil(searchResults.totalHits / imagesPerPage)
         }
@@ -42,7 +43,8 @@ function makeQuery(formattedInput, pageNumber) {
         } else {
             showLoadMoreButton()
         }
-    }).catch(error => {
+    }
+    catch (error) {
         iziToast.error({
             color: "",
             title: "Oops!There seems to be an error!",
@@ -50,8 +52,7 @@ function makeQuery(formattedInput, pageNumber) {
             position: "topCenter"
         });
         hideLoader()
-        return
-    })
+    }
 }
 
 searchForm.addEventListener("submit", event => {
@@ -83,9 +84,26 @@ searchForm.addEventListener("submit", event => {
 
 })
 
-loadButton.addEventListener("click", event => {
-    currentPageNumber += 1
+loadButton.addEventListener("click", async event => {
     hideLoadMoreButton()
-    showLoader()
-    makeQuery(savedInput, currentPageNumber)
+    currentPageNumber += 1
+    try {
+        await makeQuery(savedInput, currentPageNumber)
+        setTimeout(() => {
+            const { height: imageHeight } = document.querySelector(".gallery-item").getBoundingClientRect()
+            window.scrollBy({
+                top: imageHeight * 2,
+                behavior: 'smooth'
+            })
+        }, 300);
+
+    }
+    catch (error) {
+        iziToast.error({
+            title: "Error!",
+            message: `The search field cannot be empty!`,
+            position: "topCenter"
+        });
+        return
+    }
 })
